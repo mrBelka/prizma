@@ -4,6 +4,8 @@
 #include <Logger.hpp>
 #include <ModbusRTUMaster.hpp>
 #include <UniversalModbusRTUClient.hpp>
+#include "crow.h"
+#include "crow/middlewares/cors.h"
 
 
 int main()
@@ -11,6 +13,32 @@ int main()
     SetLogLevel(prizma::LogLevel::Debug);
 
     prizma::UniversalModbusRTUClient client("pre16di.json");
+
+    client.Poll();
+
+    crow::App<crow::CORSHandler> app;
+    auto& cors = app.get_middleware<crow::CORSHandler>();
+
+    // clang-format off
+    cors
+      .global()
+        .headers("Content-Type", "Upgrade-Insecure-Requests")
+        .methods("POST"_method, "GET"_method)
+      .prefix("/cors")
+        .origin("localhost:5173")
+      .prefix("/nocors")
+        .ignore();
+    // clang-format on
+
+    CROW_ROUTE(app, "/configuration").methods("POST"_method)([](const crow::request& req){
+        auto x = crow::json::load(req.body);
+        if (!x)
+            return crow::response(400);
+            std::cout << x << std::endl;
+        return crow::response{"Hello"};
+    });
+
+    app.port(86).run();
 
     /*try
     {

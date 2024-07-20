@@ -11,6 +11,7 @@ project(${PROJECT_NAME})
 set(CMAKE_CXX_STANDARD 20)
 
 # libs
+include_directories("extlibs/Crow/include")
 include_directories("extlibs/asio/include")
 include_directories("extlibs")
 
